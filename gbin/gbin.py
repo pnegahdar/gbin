@@ -24,11 +24,12 @@ class GBin(object):
             raise GbinException("No git command found.")
         if not is_git_dir(git_dir):
             raise GbinException("{} is not a git directory".format(git_dir))
-        self._glob = GBIN_FILE_GLOB
+        self._glob = glob
         self.git_dir = git_dir
 
     def get_bins(self):
         potential_files = git_find_files(git_dir=self.git_dir, match=self._glob)
+
 
 
 class Bin(object):

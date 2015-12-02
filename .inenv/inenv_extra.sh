@@ -1,1 +1,0 @@
-source /Users/pnegahdar/Projects/gbin/.inenv/gbin/bin/activate

@@ -1,4 +1,4 @@
 click==5.1
-inenv==0.5.0
+inenv==0.5.1
 virtualenv==13.1.2
 wheel==0.24.0
