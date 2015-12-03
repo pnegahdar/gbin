@@ -7,8 +7,8 @@ def get_git_command(git_dir):
     Grabs the git command with the --work-tree and --git-dir args set
     :rtype: list
     """
-    dot_git_dir = os.path.join(git_dir, '.git/')
-    return ['git', '--git-dir', git_dir, '--work-tree', dot_git_dir]
+    dot_git_dir = os.path.join(git_dir, '.git')
+    return ['git', '--git-dir', dot_git_dir , '--work-tree', git_dir]
 
 
 def is_git_dir(git_dir):
@@ -34,4 +34,4 @@ def git_find_files(git_dir, match=None):
     :rtype: list
     """
     results = subprocess.check_output(get_git_command(git_dir) + filter(None, ['ls-files', match]))
-    return results.split('\n')
+    return results.splitlines()
