@@ -31,27 +31,29 @@ class GBin(object):
         self.git_dir = git_dir
 
     def get_bins(self):
-        matched_files = []
+        bins = []
         potential_files = git_find_files(git_dir=self.git_dir, match=self._glob)
-        import ipdb; ipdb.set_trace();
-        for file in potential_files:
-            ext = os.path.splitext(file)
+        for fn in potential_files:
+            ext = os.path.splitext(fn)
             if ext and ext in self._ext_ex:
                 continue
-            if os.path.basename(file) in GBIN_EXCLUED_FN:
+            if os.path.basename(fn) in GBIN_EXCLUED_FN:
                 continue
-            matched_files.append(file)
-        return matched_files
+            full_path = os.path.join(self.git_dir, fn)
+            bins.append(Bin(full_path))
+        return bins
 
 
 class Bin(object):
     def __init__(self, abs_path):
         self._abs_path = abs_path
         self._inenv_name = None
+        self._closes_venv =
+
 
     @property
     def abs_path(self):
-        pass
+        return self._abs_path
 
 
     def path_relative_to(self, start_path):
@@ -63,4 +65,4 @@ class Bin(object):
 
 
     def execute(self, quiet=False):
-
+        pass
