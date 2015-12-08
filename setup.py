@@ -9,7 +9,9 @@
 # Copyright (c) 2015, Parham Negahdar <pnegahdar@gmail.com>
 
 from setuptools import setup, find_packages
-from gbin import __version__
+
+from gbin.version import __version__
+
 
 tests_require = [
     'mock',
@@ -49,6 +51,9 @@ a git based command discoverer and executer
     install_requires=[
         # add your dependencies here
         # remember to use 'package-name>=x.y.z,<x.y+1.0' notation (this way you get bugfixes)
+        'inenv>=0.5.7'
+        'click>=4.0',
+        'virtualenv>=13.0.3'
     ],
     extras_require={
         'tests': tests_require,
@@ -56,7 +61,7 @@ a git based command discoverer and executer
     entry_points={
         'console_scripts': [
             # add cli scripts here in this form:
-            # 'gbin=gbin.cli:main',
+            'gbin=gbin.cli:run_cli',
         ],
     },
 )
