@@ -10,8 +10,6 @@
 
 from setuptools import setup, find_packages
 
-from gbin.version import __version__
-
 
 tests_require = [
     'mock',
@@ -27,7 +25,7 @@ tests_require = [
 
 setup(
     name='gbin',
-    version=__version__,
+    version='0.2.2',
     description='a git based command discoverer and executer',
     long_description='''
 a git based command discoverer and executer

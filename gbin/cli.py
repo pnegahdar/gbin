@@ -3,7 +3,6 @@ import sys
 import click
 
 from gbin import GBin
-import version
 
 
 _gbins = None
@@ -31,7 +30,7 @@ def list_commands():
 
 def print_version():
     """Print the inenv version"""
-    print version.__version__
+    print '0.2.2'
 
 
 def run_cli():
@@ -41,7 +40,7 @@ def run_cli():
         exit(0)
     gbin_command = args[1]
     rest_args = args[2:]
-    if gbin_command == version:
+    if gbin_command == 'version':
         print_version()
     else:
         run(gbin_command, rest_args, always_exit=True)
