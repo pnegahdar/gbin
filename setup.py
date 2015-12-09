@@ -51,7 +51,7 @@ a git based command discoverer and executer
     install_requires=[
         # add your dependencies here
         # remember to use 'package-name>=x.y.z,<x.y+1.0' notation (this way you get bugfixes)
-        'inenv>=0.5.7',
+        'inenv>=0.6.0',
         'click>=4.0',
         'virtualenv>=13.0.3'],
     extras_require={
