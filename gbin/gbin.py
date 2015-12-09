@@ -4,7 +4,6 @@ import subprocess
 import sys
 
 from inenv.inenv import InenvManager
-
 from utils import has_git_cmd, is_git_dir, git_find_files
 
 
@@ -80,6 +79,7 @@ class Bin(object):
         self._abs_path = abs_path
         self._inenv_name = None
         self._closest_venv = None
+        self._closest_prepped_venv = None
         self._pretty_name = None
 
     @property
@@ -96,6 +96,7 @@ class Bin(object):
             inenv = self.inenv_manager or InenvManager(
                 search_start_dir=os.path.dirname(self._abs_path))
             roots = {v['root']: k for k, v in inenv.registered_venvs.items()}
+            self.inenv_manager = inenv
             cur_dir = os.path.dirname(os.path.dirname(self._abs_path))
             while True:
                 if cur_dir in roots:
@@ -108,11 +109,19 @@ class Bin(object):
                 cur_dir = next_dir
         return self._closest_venv
 
-    def execute(self, always_exit=True, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr):
+    @property
+    def closest_prepped_venv(self):
+        if not self._closest_prepped_venv:
+            venv = self.closest_venv
+            self._closest_prepped_venv = self.inenv_manager.get_prepped_venv(venv.venv_name)
+        return self._closest_prepped_venv
+
+    def execute(self, args=None, always_exit=True, stdin=sys.stdin, stdout=sys.stdout,
+                stderr=sys.stderr):
         cmd = []
         is_exec = os.access(self._abs_path, os.X_OK)
+        ext = os.path.splitext(self._abs_path)[1]
         if not is_exec:
-            ext = os.path.splitext(self._abs_path)[1]
             if ext in shebang_map:
                 cmd += shebang_map[ext]
             else:
@@ -120,9 +129,11 @@ class Bin(object):
                     "File {} is not an executable and the extension {} is unknown".format(
                         self._abs_path, ext))
         cmd.append(self._abs_path)
+        if args:
+            cmd = cmd + list(args)
         if self.closest_venv:
-            process = self.closest_venv.run(cmd, always_exit=always_exit, stdin=stdin,
-                                            stdout=stdout, stderr=stderr)
+            process = self.closest_prepped_venv.run(cmd, always_exit=always_exit, stdin=stdin,
+                                                    stdout=stdout, stderr=stderr)
         else:
             process = subprocess.Popen(cmd, stdin=stdin, stdout=stdout, stderr=stderr)
 
