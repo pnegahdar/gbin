@@ -4,6 +4,7 @@ import subprocess
 import sys
 
 from inenv.inenv import InenvManager
+
 from utils import has_git_cmd, is_git_dir, git_find_files
 
 
@@ -116,7 +117,8 @@ class Bin(object):
             self._closest_prepped_venv = self.inenv_manager.get_prepped_venv(venv.venv_name)
         return self._closest_prepped_venv
 
-    def execute(self, args=None, always_exit=True, stdin=sys.stdin, stdout=sys.stdout,
+    def execute(self, args=None, always_exit=False, exit_if_failed=True, stdin=sys.stdin,
+                stdout=sys.stdout,
                 stderr=sys.stderr):
         cmd = []
         is_exec = os.access(self._abs_path, os.X_OK)
@@ -132,13 +134,16 @@ class Bin(object):
         if args:
             cmd = cmd + list(args)
         if self.closest_venv:
-            process = self.closest_prepped_venv.run(cmd, always_exit=always_exit, stdin=stdin,
+            process = self.closest_prepped_venv.run(cmd, always_exit=always_exit,
+                                                    exit_if_failed=exit_if_failed, stdin=stdin,
                                                     stdout=stdout, stderr=stderr)
         else:
             process = subprocess.Popen(cmd, stdin=stdin, stdout=stdout, stderr=stderr)
 
             exit_code = process.wait()
             if always_exit:
+                sys.exit(exit_code)
+            if exit_if_failed and exit_code != 0:
                 sys.exit(exit_code)
         return process
 
