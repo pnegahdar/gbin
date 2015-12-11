@@ -25,7 +25,7 @@ tests_require = [
 
 setup(
     name='gbin',
-    version='0.2.3',
+    version='0.2.4',
     description='a git based command discoverer and executer',
     long_description='''
 a git based command discoverer and executer

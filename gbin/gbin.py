@@ -1,5 +1,6 @@
 import os
 import collections
+import re
 import subprocess
 import sys
 
@@ -11,13 +12,15 @@ from utils import has_git_cmd, is_git_dir, git_find_files
 shebang_map = {
     '.js': ['/usr/bin/env', 'node'],
     '.py': ['/usr/bin/env', 'python'],
-    '.sh': ['/usr/bin/env', 'sh']
+    '.sh': ['/usr/bin/env', 'bash']
 }
 RECURSION_LIMIT = 100
 GBIN_DIRS = 'gbin'
 GBIN_FILE_GLOB = 'gbin/'
 GBIN_EXCLUED_FN = {'__init__.py'}
 GBIN_EXCLUDE_EXT = {'.pyc'}
+GBIN_DOC_LINE_LIMIT = 2  # Number of lines to check for a doc
+REGEX_DOC_RE = re.compile(r'^[\-;#\/\s}{]+["\']([^"\']+)["\']$')
 
 
 class GbinException(Exception):
@@ -82,6 +85,7 @@ class Bin(object):
         self._closest_venv = None
         self._closest_prepped_venv = None
         self._pretty_name = None
+        self._doc = None
 
     @property
     def abs_path(self):
@@ -156,3 +160,17 @@ class Bin(object):
             parts.append(os.path.splitext(os.path.basename(self._abs_path))[0])
             self._pretty_name = '.'.join(parts)
         return self._pretty_name
+
+    @property
+    def doc(self):
+        if self._doc is None:
+            with open(self._abs_path) as exc_file:
+                first_lines = [exc_file.readline() for _ in range(GBIN_DOC_LINE_LIMIT)]
+                for line in first_lines:
+                    results = REGEX_DOC_RE.findall(line)
+                    if results:
+                        self._doc = results[0]
+                        break
+            if not self._doc:
+                self._doc = ''
+        return self._doc
