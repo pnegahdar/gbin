@@ -3,7 +3,7 @@ import sys
 import click
 from click.formatting import HelpFormatter
 
-from gbin import GBin
+from gbin import GBin, GbinException
 
 
 _gbins = None
@@ -29,26 +29,29 @@ def list_commands():
     formatter = HelpFormatter()
     doc_pairs = [(name, bin.doc) for name, bin in sorted(_gbins.items(), key=lambda x: x[0])]
     with formatter.section('Commands'):
-        formatter.write_dl(doc_pairs)
+        formatter.write_dl(doc_pairs or [tuple()])
     print formatter.getvalue()
 
 
 def print_version():
     """Print the inenv version"""
-    print '0.2.4'
+    print '0.2.5'
 
 
 def run_cli():
-    args = sys.argv
-    if len(args) == 1:
-        list_commands()
-        exit(0)
-    gbin_command = args[1]
-    rest_args = args[2:]
-    if gbin_command == 'version':
-        print_version()
-    else:
-        run(gbin_command, rest_args, always_exit=True)
+    try:
+        args = sys.argv
+        if len(args) == 1:
+            list_commands()
+            exit(0)
+        gbin_command = args[1]
+        rest_args = args[2:]
+        if gbin_command == 'version':
+            print_version()
+        else:
+            run(gbin_command, rest_args, always_exit=True)
+    except GbinException as e:
+        click.echo(click.style("{}".format(e.message), fg='red'))
 
 
 if __name__ == '__main__':

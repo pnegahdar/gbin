@@ -55,7 +55,7 @@ class GBin(object):
         dups = [item for item, count in
                 collections.Counter([bin.pretty_name for bin in bins]).items() if count > 1]
         if dups:
-            raise GbinException("Found duplciate commands: {}".format(', '.join(dups)))
+            raise GbinException("Found duplicate commands: {}".format(', '.join(dups)))
         return {bin.pretty_name: bin for bin in bins}
 
     def closes_git_dir(self):

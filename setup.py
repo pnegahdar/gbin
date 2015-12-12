@@ -25,8 +25,8 @@ tests_require = [
 
 setup(
     name='gbin',
-    version='0.2.4',
-    description='a git based command discoverer and executer',
+    version='0.2.5',
+    description='a git based command discoverer and executor',
     long_description='''
 a git based command discoverer and executer
 ''',
@@ -49,7 +49,7 @@ a git based command discoverer and executer
     install_requires=[
         # add your dependencies here
         # remember to use 'package-name>=x.y.z,<x.y+1.0' notation (this way you get bugfixes)
-        'inenv>=0.6.0',
+        'inenv>=0.6.1',
         'click>=4.0',
         'virtualenv>=13.0.3'],
     extras_require={
