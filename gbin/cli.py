@@ -1,5 +1,3 @@
-import sys
-
 import click
 from click.formatting import HelpFormatter
 
@@ -35,17 +33,18 @@ def list_commands():
 
 def print_version():
     """Print the inenv version"""
-    print '0.2.5'
+    print '0.2.6'
 
 
-def run_cli():
+@click.argument('args', nargs=-1)
+@click.command()
+def run_cli(args):
     try:
-        args = sys.argv
-        if len(args) == 1:
+        if not args:
             list_commands()
             exit(0)
-        gbin_command = args[1]
-        rest_args = args[2:]
+        gbin_command = args[0]
+        rest_args = args[1:]
         if gbin_command == 'version':
             print_version()
         else:

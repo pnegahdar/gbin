@@ -65,7 +65,8 @@ class GBin(object):
             git_path = os.path.join(directory, '.git')
             if not os.access(directory, os.W_OK):
                 raise GbinException(
-                    "Lost permissions walkign up to {}. Unable to find git dir.".format(directory))
+                    "Unable to find git directory. Lost permissions walking up to {}. ".format(
+                        directory))
             if os.path.isdir(git_path):
                 return directory
             parent_dir = os.path.realpath(os.path.join(directory, '..'))
@@ -116,9 +117,14 @@ class Bin(object):
 
     @property
     def closest_prepped_venv(self):
+        if os.isatty(1):
+            stdout = sys.stdout
+        else:
+            stdout = open(os.devnull, "w")
         if not self._closest_prepped_venv:
             venv = self.closest_venv
-            self._closest_prepped_venv = self.inenv_manager.get_prepped_venv(venv.venv_name)
+            self._closest_prepped_venv = self.inenv_manager.get_prepped_venv(venv.venv_name,
+                                                                             stdout=stdout)
         return self._closest_prepped_venv
 
     def execute(self, args=None, always_exit=False, exit_if_failed=True, stdin=sys.stdin,
