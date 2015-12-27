@@ -1,10 +1,12 @@
 import os
 import collections
 import re
+import signal
 import subprocess
 import sys
 
 from inenv.inenv import InenvManager
+from inenv.inenv import InenvException
 
 from utils import has_git_cmd, is_git_dir, git_find_files
 
@@ -51,6 +53,8 @@ class GBin(object):
             if os.path.basename(fn) in GBIN_EXCLUED_FN:
                 continue
             full_path = os.path.join(self.git_dir, fn)
+            if not os.path.isfile(full_path):
+                continue
             bins.append(Bin(full_path, self.inenv_manager))
         dups = [item for item, count in
                 collections.Counter([bin.pretty_name for bin in bins]).items() if count > 1]
@@ -99,24 +103,29 @@ class Bin(object):
     @property
     def closest_venv(self):
         if not self._closest_venv:
-            inenv = self.inenv_manager or InenvManager(
-                search_start_dir=os.path.dirname(self._abs_path))
-            roots = {v['root']: k for k, v in inenv.registered_venvs.items()}
-            self.inenv_manager = inenv
-            cur_dir = os.path.dirname(os.path.dirname(self._abs_path))
-            while True:
-                if cur_dir in roots:
-                    self._closest_venv = inenv.get_venv(roots[cur_dir])
-                    return self._closest_venv
-                os.path.dirname(cur_dir)
-                next_dir = os.path.dirname(cur_dir)
-                if next_dir == cur_dir:
-                    break
-                cur_dir = next_dir
+            try:
+                inenv = self.inenv_manager or InenvManager(
+                    search_start_dir=os.path.dirname(self._abs_path))
+                roots = {v['root']: k for k, v in inenv.registered_venvs.items()}
+                self.inenv_manager = inenv
+                cur_dir = os.path.dirname(os.path.dirname(self._abs_path))
+                while True:
+                    if cur_dir in roots:
+                        self._closest_venv = inenv.get_venv(roots[cur_dir])
+                        return self._closest_venv
+                    os.path.dirname(cur_dir)
+                    next_dir = os.path.dirname(cur_dir)
+                    if next_dir == cur_dir:
+                        break
+                    cur_dir = next_dir
+            except InenvException:
+                return None
         return self._closest_venv
 
     @property
     def closest_prepped_venv(self):
+        if not self.closest_venv:
+            return None
         if os.isatty(1):
             stdout = sys.stdout
         else:
@@ -129,7 +138,7 @@ class Bin(object):
 
     def execute(self, args=None, always_exit=False, exit_if_failed=True, stdin=sys.stdin,
                 stdout=sys.stdout,
-                stderr=sys.stderr):
+                stderr=sys.stderr, env=None):
         cmd = []
         is_exec = os.access(self._abs_path, os.X_OK)
         ext = os.path.splitext(self._abs_path)[1]
@@ -143,19 +152,35 @@ class Bin(object):
         cmd.append(self._abs_path)
         if args:
             cmd = cmd + list(args)
-        if self.closest_venv:
-            process = self.closest_prepped_venv.run(cmd, always_exit=always_exit,
-                                                    exit_if_failed=exit_if_failed, stdin=stdin,
-                                                    stdout=stdout, stderr=stderr)
-        else:
-            process = subprocess.Popen(cmd, stdin=stdin, stdout=stdout, stderr=stderr)
-
-            exit_code = process.wait()
-            if always_exit:
-                sys.exit(exit_code)
-            if exit_if_failed and exit_code != 0:
-                sys.exit(exit_code)
-        return process
+        try:
+            if self.closest_venv:
+                process = self.closest_prepped_venv.run(cmd, always_exit=always_exit,
+                                                        exit_if_failed=exit_if_failed, stdin=stdin,
+                                                        stdout=stdout, stderr=stderr, env=env)
+            else:
+                env = env or os.environ
+                process = None
+                try:
+                    process = subprocess.Popen(cmd, stdin=stdin, stdout=stdout, stderr=stderr,
+                                               env=env)
+                    exit_code = process.wait()
+                except KeyboardInterrupt:
+                    if process:
+                        process.send_signal(signal.SIGINT)
+                        exit(process.wait())
+                    raise
+                if always_exit:
+                    exit(exit_code)
+                if exit_if_failed and exit_code != 0:
+                    exit(exit_code)
+            return process
+        except OSError as e:
+            if "Exec format error" in e:
+                print "Unable to run command: {}, if file is executable make sure it has a " \
+                      "shebang".format(' '.join(cmd))
+                exit(1)
+            else:
+                raise
 
     @property
     def pretty_name(self):

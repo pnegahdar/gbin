@@ -26,13 +26,15 @@ def find_cmd(gbins, user_input):
         exit(1)
 
 
-def run(cmd_name, args=None, always_exit=False, exit_if_failed=True):
+def run(cmd_name, args=None, always_exit=False, exit_if_failed=True, stdin=sys.stdin,
+        stdout=sys.stdout, stderr=sys.stderr, env=None):
     """Run this command"""
     global _gbins
     if not _gbins:
         _gbins = GBin().get_bins()
     cmd = find_cmd(_gbins, cmd_name)
-    return cmd.execute(args=args, always_exit=always_exit, exit_if_failed=exit_if_failed)
+    return cmd.execute(args=args, always_exit=always_exit, exit_if_failed=exit_if_failed,
+                       stdout=stdout, stderr=stderr, stdin=stdin, env=env)
 
 
 def list_commands():
@@ -57,7 +59,7 @@ def list_commands():
 
 def print_version():
     """Print the inenv version"""
-    print '0.2.8'
+    print '0.3.0'
 
 
 def run_cli():
