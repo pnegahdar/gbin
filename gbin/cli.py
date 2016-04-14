@@ -59,7 +59,7 @@ def list_commands():
 
 def print_version():
     """Print the inenv version"""
-    print '0.3.0'
+    print '0.3.1'
 
 
 def run_cli():
@@ -76,6 +76,7 @@ def run_cli():
             run(gbin_command, rest_args, always_exit=True)
     except GbinException as e:
         click.echo(click.style("{}".format(e.message), fg='red'))
+        exit(1)
 
 
 if __name__ == '__main__':

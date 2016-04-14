@@ -39,12 +39,5 @@ def git_find_files(git_dir, match):
                                               match]
         tracked_gbins = subprocess.check_output(' '.join(tracked), shell=True).splitlines()
     except subprocess.CalledProcessError:
-        tracked_gbins = []
-    try:
-        untracked = get_git_command(git_dir) + ['ls-files', '--full-name', '--exclude-standard',
-                                                '--others', git_dir, '|', 'grep', match]
-
-        untracked_gbins = subprocess.check_output(' '.join(untracked), shell=True).splitlines()
-    except subprocess.CalledProcessError:
-        untracked_gbins = []
-    return tracked_gbins + untracked_gbins
+        raise
+    return tracked_gbins
