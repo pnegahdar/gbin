@@ -5,7 +5,7 @@ import sys
 import click
 from click.formatting import HelpFormatter
 
-from gbin import GBin, GbinException
+from .gbin import GBin, GbinException
 
 
 _gbins = None
@@ -54,12 +54,12 @@ def list_commands():
                     formatter.write_dl(doc_pairs or [tuple()])
             else:
                 formatter.write_dl(doc_pairs or [tuple()])
-    print formatter.getvalue()
+    click.secho(formatter.getvalue())
 
 
 def print_version():
     """Print the inenv version"""
-    print '0.3.1'
+    click.secho('0.3.1')
 
 
 def run_cli():

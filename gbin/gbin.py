@@ -5,10 +5,10 @@ import signal
 import subprocess
 import sys
 
-from inenv.inenv import InenvManager
-from inenv.inenv import InenvException
+import click
+from inenv.inenv import InenvManager, InenvException
 
-from utils import has_git_cmd, is_git_dir, git_find_files
+from .utils import has_git_cmd, is_git_dir, git_find_files
 
 
 shebang_map = {
@@ -176,8 +176,8 @@ class Bin(object):
             return process
         except OSError as e:
             if "Exec format error" in e:
-                print "Unable to run command: {}, if file is executable make sure it has a " \
-                      "shebang".format(' '.join(cmd))
+                click.secho("Unable to run command: {}, if file is executable make sure it has a "
+                            "shebang".format(' '.join(cmd)))
                 exit(1)
             else:
                 raise
