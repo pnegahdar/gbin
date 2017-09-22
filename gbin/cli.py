@@ -59,7 +59,7 @@ def list_commands():
 
 def print_version():
     """Print the inenv version"""
-    click.secho('0.3.1')
+    click.secho('0.3.2')
 
 
 def run_cli():
