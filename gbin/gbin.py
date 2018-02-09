@@ -1,5 +1,5 @@
-import os
 import collections
+import os
 import re
 import signal
 import subprocess
@@ -9,7 +9,6 @@ import click
 from inenv.inenv import InenvManager, InenvException
 
 from .utils import has_git_cmd, is_git_dir, git_find_files
-
 
 shebang_map = {
     '.js': ['/usr/bin/env', 'node'],
@@ -23,6 +22,7 @@ GBIN_EXCLUED_FN = {'__init__.py'}
 GBIN_EXCLUDE_EXT = {'.pyc'}
 GBIN_DOC_LINE_LIMIT = 2  # Number of lines to check for a doc
 REGEX_DOC_RE = re.compile(r'^[\-;#\/\s}{]+["\']([^"\']+)["\']$')
+NO_VENV_COMMENT_STRING = '__novenv__'
 
 
 class GbinException(Exception):
@@ -90,12 +90,13 @@ class Bin(object):
         self._closest_venv = None
         self._closest_prepped_venv = None
         self._pretty_name = None
+        self._should_venv = None
         self._doc = None
+        self._skip_venv = None
 
     @property
     def abs_path(self):
         return self._abs_path
-
 
     def path_relative_to(self, start_path):
         pass
@@ -153,7 +154,7 @@ class Bin(object):
         if args:
             cmd = cmd + list(args)
         try:
-            if self.closest_venv:
+            if not self.skip_venv and self.closest_venv:
                 process = self.closest_prepped_venv.run(cmd, always_exit=always_exit,
                                                         exit_if_failed=exit_if_failed, stdin=stdin,
                                                         stdout=stdout, stderr=stderr, env=env)
@@ -191,6 +192,19 @@ class Bin(object):
             parts.append(os.path.splitext(os.path.basename(self._abs_path))[0])
             self._pretty_name = '.'.join(parts)
         return self._pretty_name
+
+    @property
+    def skip_venv(self):
+        if self._skip_venv is None:
+            skip = False
+            with open(self._abs_path) as exc_file:
+                first_lines = [exc_file.readline() for _ in range(4)]
+                for line in first_lines:
+                    if NO_VENV_COMMENT_STRING in line:
+                        skip = True
+                        break
+            self._skip_venv = skip
+        return self._skip_venv
 
     @property
     def doc(self):
