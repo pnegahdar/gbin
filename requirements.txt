@@ -4,7 +4,7 @@ decorator==4.0.4
 gnureadline==6.3.3
 inenv==0.6.2
 ipdb==0.8.1
-ipython==4.0.1
+ipython==7.16.3
 ipython-genutils==0.1.0
 path.py==8.1.2
 pexpect==4.0.1
